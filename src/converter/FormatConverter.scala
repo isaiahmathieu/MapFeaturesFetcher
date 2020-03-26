@@ -1,44 +1,24 @@
 package converter
 
-import java.io.{File, PrintWriter}
+import java.io.File
 
-import scala.io.Source
+trait FormatConverter {
+  def convert(dataToConvert: String): String
+}
 
-class FormatConverter {
-  val OsmToGeoJsonToolPath = "/Users/admin/AppData/Roaming/npm/node_modules/osmtogeojson/osmtogeojson"
+class OsmXmlToGeoJsonConverter(private val osmToGeoJsonToolPath: String) extends FormatConverter {
 
-  def convertOsmXmlToGeoJson(dataToConvert: String): String = {
-    // save the data to a temporary file
+  override def convert(dataToConvert: String): String = {
+    // save the data to a temporary file because the tool that does the conversion reads input from a file
     val xmlTempFile = File.createTempFile("temp_osm_xml_",".xml")
     xmlTempFile.deleteOnExit()
     val xmlTempFilePath = xmlTempFile.getAbsoluteFile
-    val geoJsonTempFile = File.createTempFile("temp_geojson_", ".geojson")
-    geoJsonTempFile.deleteOnExit()
-    val geoJsonTempFilePath = geoJsonTempFile.getAbsolutePath
     import java.io._
     val pw = new PrintWriter(xmlTempFile)
     pw.write(dataToConvert)
-    pw.close
-    println(333)
+    pw.close()
     import scala.sys.process._
-    val cmd = s"""node "$OsmToGeoJsonToolPath" "$xmlTempFilePath" > "$geoJsonTempFilePath""""
-    println(cmd)
-    val output = cmd.!
-    println("xml to geojson conversion output:")
-    //println(output)
-    val result = Source.fromFile(xmlTempFile).getLines().mkString
-
-    xmlTempFile.delete()
-    geoJsonTempFile.delete()
-    result
+    // !! operator executes the external command and captures the output
+    s"""node "$osmToGeoJsonToolPath" "$xmlTempFilePath" """.!!
   }
-
-}
-
-object FormatConverter {
-  def main(args: Array[String]): Unit = {
-    val converter = new FormatConverter
-    converter.convertOsmXmlToGeoJson("oijojiojiojiojioij")
-  }
-
 }

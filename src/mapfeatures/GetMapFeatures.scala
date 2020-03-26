@@ -1,9 +1,9 @@
 package mapfeatures
 
 import clientwrapper.OverpassWrapper
-import converter.FormatConverter
+import converter.OsmXmlToGeoJsonConverter
 import featurefetcher.{FeatureFetcher, FeatureFetcherFactory}
-import org.apache.commons.cli.{CommandLine, CommandLineParser, DefaultParser, Option, Options, ParseException}
+import org.apache.commons.cli.{CommandLine, DefaultParser, Option, Options, ParseException}
 import persistence.LocalFilePersister
 
 import scala.io.Source
@@ -15,6 +15,7 @@ object GetMapFeatures {
   val Features = "features"
   val OutputFormat = "output_format"
   val OverpassEndpoint = "overpass_endpoint"
+  val OsmXmlToGeoJsonToolPath = "osm_xml_to_geo_json_tool_path"
 
   val FetchableFeatures = List("trails", "lakes", "peaks", "viewpoints", "tracks", "rivers", "roads")
 
@@ -33,6 +34,7 @@ object GetMapFeatures {
     val features = commandLine.getOptionValue(Features)
     val outputFormat = commandLine.getOptionValue(OutputFormat)
     val overpassEndpoint = commandLine.getOptionValue(OverpassEndpoint)
+    val osmXmlToGeoJsonToolPath = commandLine.getOptionValue(OsmXmlToGeoJsonToolPath)
 
     val wrapper = new OverpassWrapper(overpassEndpoint)
 
@@ -42,8 +44,8 @@ object GetMapFeatures {
       FeatureNameAndFetcher(x, FeatureFetcherFactory.apply(x, boundaryCoordinates, outputFormat, wrapper, null)))
     case class FeatureNameAndData(name: String, data: String)
     val featureNamesAndXmlData = featureNamesAndFetchers.map(featureFetcher => FeatureNameAndData(featureFetcher.name, featureFetcher.fetcher.fetchFeatures()))
-    val formatConverter = new FormatConverter
-    val featureNamesAndGeojsonData = featureNamesAndXmlData.map(x => FeatureNameAndData(x.name, formatConverter.convertOsmXmlToGeoJson(x.data)))
+    val formatConverter = new OsmXmlToGeoJsonConverter(osmXmlToGeoJsonToolPath)
+    val featureNamesAndGeojsonData = featureNamesAndXmlData.map(x => FeatureNameAndData(x.name, formatConverter.convert(x.data)))
     val featurePersister = new LocalFilePersister(outputFolder, outputFormat)
     featureNamesAndGeojsonData.foreach(x => featurePersister.persist(x.name, x.data ))
   }
@@ -60,8 +62,9 @@ object GetMapFeatures {
     options.addOption(new Option(BoundaryCoordinatesFile, BoundaryCoordinatesFile, true, "path to file containing coordinates of boundary"))
     options.addOption(new Option(OutputFolder, OutputFolder, true, "path to directory into which results should be written"))
     options.addOption(new Option(Features, Features, true, "list of one or more specific features to download. If empty or omitted, all features are downloaded"))
-    options.addOption(new Option(OutputFormat, OutputFormat, true, "output format"))
+    options.addOption(new Option(OutputFormat, OutputFormat, true, "output format, either osmxml or geojson"))
     options.addOption(new Option(OverpassEndpoint, OverpassEndpoint, true, "endpoint for the overpass API"))
+    options.addOption(new Option(OsmXmlToGeoJsonToolPath, OsmXmlToGeoJsonToolPath, true, "path to nodejs tool that converts osm xml to geojson. only required if conversion to geojson is needed"))
     val parser = new DefaultParser
 
     try parser.parse(options, args)
