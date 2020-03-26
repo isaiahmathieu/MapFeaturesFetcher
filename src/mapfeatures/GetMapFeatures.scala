@@ -1,8 +1,10 @@
 package mapfeatures
 
 import clientwrapper.OverpassWrapper
-import featurefetcher.FeatureFetcherFactory
+import converter.FormatConverter
+import featurefetcher.{FeatureFetcher, FeatureFetcherFactory}
 import org.apache.commons.cli.{CommandLine, CommandLineParser, DefaultParser, Option, Options, ParseException}
+import persistence.LocalFilePersister
 
 import scala.io.Source
 
@@ -13,6 +15,8 @@ object GetMapFeatures {
   val Features = "features"
   val OutputFormat = "output_format"
   val OverpassEndpoint = "overpass_endpoint"
+
+  val FetchableFeatures = List("trails", "lakes", "peaks", "viewpoints", "tracks", "rivers", "roads")
 
   def main(args: Array[String]): Unit = {
     // parse args
@@ -31,12 +35,24 @@ object GetMapFeatures {
     val overpassEndpoint = commandLine.getOptionValue(OverpassEndpoint)
 
     val wrapper = new OverpassWrapper(overpassEndpoint)
-    val riverFetcher = FeatureFetcherFactory.apply("rivers", boundaryCoordinates, outputFormat, wrapper, null)
-    val riverData = riverFetcher.fetchFeatures()
-    println(riverData)
+
+    val featureNames = features.split("\\s+")
+    case class FeatureNameAndFetcher(name: String, fetcher: FeatureFetcher)
+    val featureNamesAndFetchers = featureNames.map(x =>
+      FeatureNameAndFetcher(x, FeatureFetcherFactory.apply(x, boundaryCoordinates, outputFormat, wrapper, null)))
+    case class FeatureNameAndData(name: String, data: String)
+    val featureNamesAndXmlData = featureNamesAndFetchers.map(featureFetcher => FeatureNameAndData(featureFetcher.name, featureFetcher.fetcher.fetchFeatures()))
+    val formatConverter = new FormatConverter
+    val featureNamesAndGeojsonData = featureNamesAndXmlData.map(x => FeatureNameAndData(x.name, formatConverter.convertOsmXmlToGeoJson(x.data)))
+    val featurePersister = new LocalFilePersister(outputFolder, outputFormat)
+    featureNamesAndGeojsonData.foreach(x => featurePersister.persist(x.name, x.data ))
   }
+
   private def parseBoundaryCoordinates(boundaryCoordinatesFile: String): String = {
-    Source.fromFile(boundaryCoordinatesFile).getLines.mkString.trim
+    val source = Source.fromFile(boundaryCoordinatesFile)
+    val coordinates = source.mkString.trim
+    source.close()
+    coordinates
   }
 
   def parseArgs(args: Array[String]): CommandLine = {
