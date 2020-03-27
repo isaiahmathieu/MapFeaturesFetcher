@@ -11,7 +11,6 @@ trait MapFeatureClientWrapper {
 }
 
 class OverpassWrapper(endpoint: String) extends MapFeatureClientWrapper {
-
   override def getFeatures(queryText: String): String = {
     val httpclient = HttpClients.createDefault
     val uriBuilder = new URIBuilder(endpoint)

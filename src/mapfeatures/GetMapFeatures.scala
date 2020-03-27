@@ -1,10 +1,7 @@
 package mapfeatures
 
-import clientwrapper.OverpassWrapper
-import converter.OsmXmlToGeoJsonConverter
-import featurefetcher.{FeatureFetcher, FeatureFetcherFactory}
+import featurefetcher.FeatureFetcher2
 import org.apache.commons.cli.{CommandLine, DefaultParser, Option, Options, ParseException}
-import persistence.LocalFilePersister
 
 import scala.io.Source
 
@@ -16,7 +13,6 @@ object GetMapFeatures {
   val OutputFormat = "output_format"
   val OverpassEndpoint = "overpass_endpoint"
   val OsmXmlToGeoJsonToolPath = "osm_xml_to_geo_json_tool_path"
-
   val FetchableFeatures = List("trails", "lakes", "peaks", "viewpoints", "tracks", "rivers", "roads")
 
   def main(args: Array[String]): Unit = {
@@ -36,9 +32,15 @@ object GetMapFeatures {
     val overpassEndpoint = commandLine.getOptionValue(OverpassEndpoint)
     val osmXmlToGeoJsonToolPath = commandLine.getOptionValue(OsmXmlToGeoJsonToolPath)
 
-    val wrapper = new OverpassWrapper(overpassEndpoint)
-
     val featureNames = features.split("\\s+")
+
+    val featureFetcher = new FeatureFetcher2
+    featureNames.foreach(
+      feature => featureFetcher.fetchFeatures("osm", feature, outputFormat,
+                overpassEndpoint, boundaryCoordinates, outputFolder, osmXmlToGeoJsonToolPath))
+
+
+   /*
     case class FeatureNameAndFetcher(name: String, fetcher: FeatureFetcher)
     val featureNamesAndFetchers = featureNames.map(x =>
       FeatureNameAndFetcher(x, FeatureFetcherFactory.apply(x, boundaryCoordinates, outputFormat, wrapper, null)))
@@ -48,6 +50,7 @@ object GetMapFeatures {
     val featureNamesAndGeojsonData = featureNamesAndXmlData.map(x => FeatureNameAndData(x.name, formatConverter.convert(x.data)))
     val featurePersister = new LocalFilePersister(outputFolder, outputFormat)
     featureNamesAndGeojsonData.foreach(x => featurePersister.persist(x.name, x.data ))
+    */
   }
 
   private def parseBoundaryCoordinates(boundaryCoordinatesFile: String): String = {
@@ -65,13 +68,10 @@ object GetMapFeatures {
     options.addOption(new Option(OutputFormat, OutputFormat, true, "output format, either osmxml or geojson"))
     options.addOption(new Option(OverpassEndpoint, OverpassEndpoint, true, "endpoint for the overpass API"))
     options.addOption(new Option(OsmXmlToGeoJsonToolPath, OsmXmlToGeoJsonToolPath, true, "path to nodejs tool that converts osm xml to geojson. only required if conversion to geojson is needed"))
-    val parser = new DefaultParser
-
-    try parser.parse(options, args)
+    try (new DefaultParser).parse(options, args)
     catch {
       case e: ParseException =>
         throw new IllegalArgumentException(e.getMessage)
     }
   }
-
 }
