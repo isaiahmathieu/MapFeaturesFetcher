@@ -1,2 +1,10 @@
+.frontend/
+.idea/
+node_modules/
+out/
+target/
+project/project/
+project/target/
 *.class
 *.log
+package-lock.json
