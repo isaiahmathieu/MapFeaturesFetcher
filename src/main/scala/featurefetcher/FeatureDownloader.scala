@@ -52,6 +52,7 @@ class FeatureDownloader(overpassEndpoint: String) {
         case _ => throw new IllegalArgumentException(s"requested output format $finalOutputFormat not recognized")
       }
       val query = insertQueryStatements(queryWithOutputFormat, featureName, boundaryCoordinates)
+      // todo log the query instead of println
       println(query)
       val featureData = overpassWrapper.getFeatures(query)
       DataAndFormat(featureData, queryOutputFormat)

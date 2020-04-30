@@ -1,68 +1,47 @@
-import com.typesafe.sbt.packager.MappingsHelper
 
 name := "MapFeaturesFetcher"
 version := "0.1"
 scalaVersion := "2.13.2"
 
-exportJars := true
-
-//val configFileLocation = "./src/universal/conf/application.ini"
-
+// responsible for downloading nodejs and npm in order to use osmtogeojson tool
 enablePlugins(FrontendPlugin)
+// responsible for generating the bash and batch startup scripts
 enablePlugins(JavaAppPackaging)
+// responsible for generating the zip file containing the startup scripts, the project jar and all dependencies
+// needed to run it
+// todo is this still needed?
 enablePlugins(UniversalPlugin)
 
+import com.typesafe.sbt.packager.MappingsHelper
+//import sbtfrontend.FrontendPlugin.autoImport.npm
+// tells the UniversalPlugin to include the two nodejs-related folders in the zip package
 mappings in Universal ++= MappingsHelper.directory(baseDirectory.value.absolutePath + "/node_modules")
 mappings in Universal ++= MappingsHelper.directory(baseDirectory.value.absolutePath + "/.frontend")
 
+// tells the JavaAppPackaging plugin to add jvm args that tell the program the location of node and osmtogeojson executables
+// to the unix and windows startup scripts. apparently the variable app_home evaluates to a different path relative to
+// the startup script on unix systems than APP_HOME evaluates to on windows
 bashScriptExtraDefines += """addJava "-DrelativePathToNode=${app_home}/../.frontend/node/node""""
 bashScriptExtraDefines += """addJava "-DrelativePathToOsmtogeojson=${app_home}/../node_modules/osmtogeojson/osmtogeojson""""
-
 batScriptExtraDefines += """call :add_java "-DrelativePathToNode=%APP_HOME%\.frontend\node\node""""
 batScriptExtraDefines += """call :add_java "-DrelativePathToOsmtogeojson=%APP_HOME%\node_modules\osmtogeojson\osmtogeojson""""
 
 lazy val root = (project in file("."))
   .settings(
     name := "MapFeaturesFetcher",
+    // defines the dependencies for this project
     libraryDependencies += "commons-cli" % "commons-cli" % "1.4",
     libraryDependencies += "commons-io" % "commons-io" % "2.6",
     libraryDependencies += "org.apache.httpcomponents" % "httpclient" % "4.5.12",
   )
 
+lazy val generateZip = taskKey[Unit](
+"""downloads all dependencies, compiles MapFeaturesFetcher code, generates startup scripts, then creates
+  |a zip file with all of these""".stripMargin)
 
-
-//lazy val installNpmAndOsmtogeojson = (project in file("."))
-//  .settings(
-//    name := "installNpmAndOsmtogeojson",
-//
-//  )
-
-
-//val myTask = taskKey[String]("installs osmtogeojson")
-//myTask := baseDirectory.value.absolutePath
-
-//lazy val createConfigFileTask = taskKey[Unit]("creates the application config file")
-
-
-//createConfigFileTask := {
-//  import java.nio.file.Files
-//  import java.nio.file.Paths
-//  import java.util.Properties
-//  import java.io.FileOutputStream
-//  val configFilePath = Paths.get(configFileLocation)
-//  // make parent directories if they don't exist
-//  configFilePath.getParent.toFile.mkdirs()
-//  Files.deleteIfExists(configFilePath)
-//  Files.createFile(configFilePath)
-//  val props = new Properties
-//  props.setProperty("relativePathToNode", Paths.get("../.frontend/node/node").toString)
-//  props.setProperty("relativePathToOsmgeojson", Paths.get("../node_modules/osmtogeojson/osmtogeojson").toString)
-//  val fos = new FileOutputStream(configFilePath.toFile)
-//  props.store(fos,"")
-//  fos.close()
-//}
-
-//lazy val tmpTask1 = taskKey[Unit]("tmptask1")
-//tmpTask1 := {
-//  println(FrontendKeys.npmVersion.value)
-//}
+generateZip := Def.sequential(
+  (Compile / compile),
+  nodeInstall,
+  npm.toTask(" install osmtogeojson"),
+  (Universal / packageBin)
+).value
