@@ -6,21 +6,20 @@ scalaVersion := "2.13.2"
 
 exportJars := true
 
-val configFileLocation = "./src/universal/conf/application.ini"
+//val configFileLocation = "./src/universal/conf/application.ini"
 
 enablePlugins(FrontendPlugin)
 enablePlugins(JavaAppPackaging)
 enablePlugins(UniversalPlugin)
 
-mappings in Universal ++= MappingsHelper.directory("/home/isaiahmathieu/IdeaProjects/MapFeaturesFetcher/node_modules")
-mappings in Universal ++= MappingsHelper.directory("/home/isaiahmathieu/IdeaProjects/MapFeaturesFetcher/.frontend")
+mappings in Universal ++= MappingsHelper.directory(baseDirectory.value.absolutePath + "/node_modules")
+mappings in Universal ++= MappingsHelper.directory(baseDirectory.value.absolutePath + "/.frontend")
 
 bashScriptExtraDefines += """addJava "-DrelativePathToNode=${app_home}/../.frontend/node/node""""
 bashScriptExtraDefines += """addJava "-DrelativePathToOsmtogeojson=${app_home}/../node_modules/osmtogeojson/osmtogeojson""""
 
-batScriptExtraDefines += """call :add_java "-DrelativePathToNode=%APP_HOME%\..\.frontend/node/node""""
-batScriptExtraDefines += """call :add_java "-DrelativePathToOsmtogeojson=%APP_HOME%\..\node_modules\osmtogeojson\osmtogeojson""""
-
+batScriptExtraDefines += """call :add_java "-DrelativePathToNode=%APP_HOME%\.frontend\node\node""""
+batScriptExtraDefines += """call :add_java "-DrelativePathToOsmtogeojson=%APP_HOME%\node_modules\osmtogeojson\osmtogeojson""""
 
 lazy val root = (project in file("."))
   .settings(
@@ -39,10 +38,10 @@ lazy val root = (project in file("."))
 //  )
 
 
-//val myTask = taskKey[Unit]("installs osmtogeojson")
-//myTask := npm.toTask(" install osmtogeojson").value
+//val myTask = taskKey[String]("installs osmtogeojson")
+//myTask := baseDirectory.value.absolutePath
 
-lazy val createConfigFileTask = taskKey[Unit]("creates the application config file")
+//lazy val createConfigFileTask = taskKey[Unit]("creates the application config file")
 
 
 //createConfigFileTask := {
