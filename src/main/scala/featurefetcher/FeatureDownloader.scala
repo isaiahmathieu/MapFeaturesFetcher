@@ -46,10 +46,8 @@ class FeatureDownloader(overpassEndpoint: String) {
           // to geojson. So xml is requested.
           queryOutputFormat = OutputFormats.xml.toString
           String.format(querySkeleton, "xml", "%s")
-        case OutputFormats.csv => // create query for csv
-          // more modifications are needed because getting csv output also requires specifying the output columms
-          throw new NotImplementedError("csv format not yet supported")
         case _ => throw new IllegalArgumentException(s"requested output format $finalOutputFormat not recognized")
+          // todo add support for csv output
       }
       val query = insertQueryStatements(queryWithOutputFormat, featureName, boundaryCoordinates)
       // todo log the query instead of println

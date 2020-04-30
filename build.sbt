@@ -21,10 +21,10 @@ mappings in Universal ++= MappingsHelper.directory(baseDirectory.value.absoluteP
 // tells the JavaAppPackaging plugin to add jvm args that tell the program the location of node and osmtogeojson executables
 // to the unix and windows startup scripts. apparently the variable app_home evaluates to a different path relative to
 // the startup script on unix systems than APP_HOME evaluates to on windows
-bashScriptExtraDefines += """addJava "-DrelativePathToNode=${app_home}/../.frontend/node/node""""
-bashScriptExtraDefines += """addJava "-DrelativePathToOsmtogeojson=${app_home}/../node_modules/osmtogeojson/osmtogeojson""""
-batScriptExtraDefines += """call :add_java "-DrelativePathToNode=%APP_HOME%\.frontend\node\node""""
-batScriptExtraDefines += """call :add_java "-DrelativePathToOsmtogeojson=%APP_HOME%\node_modules\osmtogeojson\osmtogeojson""""
+bashScriptExtraDefines += """addJava "-DnodeJsPath=${app_home}/../.frontend/node/node""""
+bashScriptExtraDefines += """addJava "-DosmtogeojsonPath=${app_home}/../node_modules/osmtogeojson/osmtogeojson""""
+batScriptExtraDefines += """call :add_java "-DnodeJsPath=%APP_HOME%\.frontend\node\node""""
+batScriptExtraDefines += """call :add_java "-DosmToGeoJsonPath=%APP_HOME%\node_modules\osmtogeojson\osmtogeojson""""
 
 lazy val root = (project in file("."))
   .settings(

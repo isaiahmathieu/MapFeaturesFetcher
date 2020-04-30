@@ -1,12 +1,12 @@
 package converter
 
 import java.io.File
-import java.nio.file.FileSystems
 
 import constant.OutputFormats
 import featurefetcher.DataAndFormat
 
-class FormatConverter(osmXmlToGeoJsonToolPath: String) {
+class FormatConverter(nodeJsPath: String, osmtogeojsonPath: String) {
+
   def convert(dataAndFormat: DataAndFormat, outputFormat: String): DataAndFormat = {
     if (outputFormat == dataAndFormat.format) {
       // no conversion needed
@@ -21,12 +21,11 @@ class FormatConverter(osmXmlToGeoJsonToolPath: String) {
       val pw = new PrintWriter(xmlTempFile)
       pw.write(dataAndFormat.data)
       pw.close()
-      import scala.sys.process._
+      val convertCommand = s"$nodeJsPath $osmtogeojsonPath $xmlTempFilePath"
       // todo add DEBUG log statements that print the location of node, of osmtogeojson, and of the command that is run
+      println(convertCommand)
       // !! operator executes the external command and captures the output
-      val relativePathToNode = System.getProperty("relativePathToNode")
-      val relativePathToOsmtogeojson = System.getProperty("relativePathToOsmtogeojson")
-      val convertCommand = s"$relativePathToNode $relativePathToOsmtogeojson $xmlTempFilePath"
+      import scala.sys.process._
       val convertedData = convertCommand.!!
       DataAndFormat(data = convertedData, format = OutputFormats.geojson.toString)
     } else  {

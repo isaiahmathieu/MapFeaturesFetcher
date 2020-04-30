@@ -12,6 +12,10 @@ trait FeaturePersister {
 
 }
 
+/**
+ * FilePersister for writing the String data to the local file system
+ * @param baseFolder
+ */
 class LocalFilePersister(baseFolder: String) extends FeaturePersister {
 
   override def persist(featureData: String, featureName: String, dataFormat: String, dataSource: String): Unit = {
@@ -22,4 +26,4 @@ class LocalFilePersister(baseFolder: String) extends FeaturePersister {
   }
 }
 
-// put other persisters here, like a cloud storage or database persister
+// put other persister classes here (or in separate files), like a cloud storage or database persister
