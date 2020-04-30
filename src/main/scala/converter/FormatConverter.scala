@@ -24,9 +24,15 @@ class FormatConverter(osmXmlToGeoJsonToolPath: String) {
       import scala.sys.process._
       // !! operator executes the external command and captures the output
       // todo fix this so it's less hardcoded...
-      val pathToNode = FileSystems.getDefault.getPath(".frontend/node/node")
-      val pathToOsmGeoJson = FileSystems.getDefault.getPath("node_modules/osmtogeojson/osmtogeojson")
-      val convertedData = s"${pathToNode.toAbsolutePath} ${pathToOsmGeoJson.toAbsolutePath} $xmlTempFilePath".!!
+      //val pathToNode = FileSystems.getDefault.getPath(".frontend/node/node")
+
+      val relativePathToNode = System.getProperty("relativePathToNode")
+      println(System.getProperty("wtf"))
+      println(relativePathToNode)
+      val relativePathToOsmtogeojson = System.getProperty("relativePathToOsmtogeojson")
+      val convertCommand = s"$relativePathToNode $relativePathToOsmtogeojson $xmlTempFilePath"
+      println(convertCommand)
+      val convertedData = convertCommand.!!
       DataAndFormat(data = convertedData, format = OutputFormats.geojson.toString)
     } else  {
       // other conversion logic goes here in the future. there would be a branch for every conversion possible

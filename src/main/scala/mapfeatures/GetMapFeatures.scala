@@ -18,6 +18,7 @@ object GetMapFeatures {
   //var options: Options = _
 
   def main(args: Array[String]): Unit = {
+    //def main(args: Array[String]): Unit = {
     val commandLine = parseArgs(args)
     // todo validate args
     val boundaryCoordinates = parseBoundaryCoordinates(commandLine.getOptionValue(BoundaryCoordinatesFile))
