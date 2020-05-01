@@ -14,14 +14,9 @@ class OverpassWrapper(endpoint: String) {
   def getFeatures(queryText: String): String = {
     val uriBuilder = new URIBuilder(endpoint)
     uriBuilder.addParameter("data", queryText)
-    val response = OverpassWrapper.httpclient.execute(new HttpGet(uriBuilder.build()))
+    // todo see if/how these http resources should be closed in the common case and in an error case
+    val httpclient = HttpClients.createDefault
+    val response = httpclient.execute(new HttpGet(uriBuilder.build()))
     IOUtils.toString(response.getEntity.getContent, StandardCharsets.UTF_8)
   }
-}
-
-/**
- * companion object so that httpclient is a singleton
- */
-object OverpassWrapper {
-  val httpclient = HttpClients.createDefault
 }
