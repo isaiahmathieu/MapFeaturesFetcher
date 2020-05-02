@@ -35,22 +35,22 @@ osm
 # Usage Notes
 run `./bin/mapfeaturesfetcher --help` to print usage
 
-An example of a valid boundary coordinates file is a text file containing the following line. The format is `latitude1 longitude1 latitude2 longitude2`. I use [this tool](http://apps.headwallphotonics.com/) to get the latitude/longitude coordinates of a polygon on a map. 
+An example of a valid boundary coordinates file is a text file containing the following line. The format is `latitude1 longitude1 latitude2 longitude2 ...`. I use [this tool](http://apps.headwallphotonics.com/) to get the latitude/longitude coordinates of a polygon on a map. 
 ```
 47.6405097 -121.3802642 47.5186916 -121.3775176 47.4871488 -121.1928099 47.6666482 -121.1722106 47.6869906 -121.3054198
 ```
 
-The startup script sets two JVM properties `nodeJsPath` and `osmtogeojsonPath`, which tell the tool the location of the nodejs executable and the [osmtogeojson](https://github.com/tyrasd/osmtogeojson) module that are packaged in the zip file, which are used for converting map feature data to geojson format. You can have the tool use a different nodejs or osmtogeojson executable by specifying a location with the command line options `--nodejs_path <path>` and 
+The startup script sets two JVM properties `nodeJsPath` and `osmtogeojsonPath`, which tell the tool the location of the nodejs executable and the [osmtogeojson](https://github.com/tyrasd/osmtogeojson) module that are packaged in the zip file. These are used for converting map feature data to geojson format. You can have the tool use a different nodejs or osmtogeojson executable by specifying a location with the command line options `--nodejs_path <path>` and 
 `--osmtogeojson_path <path>`. This is all irrelevant if `--output_format` is not `geojson`
 
 # Build and packaging info
 The command `sbt generateZip` does the following:
 1. downloads code dependencies of MapFeaturesFetcher
 1. compiles MapFeaturesFetcher code and creates a jar of these class files
-1. installs NodeJS inside the project directory
-1. installs the NodeJS module [osmtogeojson](https://github.com/tyrasd/osmtogeojson), which is used by MapFeaturesFetcher to convert [OSM XML](https://wiki.openstreetmap.org/wiki/OSM_XML) to [geojson](https://geojson.org/) format
+1. installs NodeJS in the project directory
+1. installs the NodeJS module [osmtogeojson](https://github.com/tyrasd/osmtogeojson) in the project directory, which is used by MapFeaturesFetcher to convert [OSM XML](https://wiki.openstreetmap.org/wiki/OSM_XML) to [geojson](https://geojson.org/) format
 1. generates a startup script for Linux/Mac and a startup script for Windows
-1. creates a zip file containing all of the above, which can be moved to any location that java is installed and run.
+1. creates a zip file containing all of the above, which can be moved to a different location or computer and run (as long as java is installed)
 
 # Inspiration
 Hiking map apps lack the controls that I desire for displaying map features. For example, trails and other relevant features disappear when you zoom out, and it's not possible to change the color of lakes so that they stand out better (useful if you want to plan a hike to an alpine lake). While traveling in 2019 I learned to use [QGIS](qgis.org) so that I could create custom maps of locations of interest. To keep my coding skills sharp I wrote a python script to download specific features within some boundary so I could import these to QGIS. During covid-19 pandemic I decided to turn this script into something more extensible and easy for others to use, so I re-wrote it in Scala and added SBT configurations so it can easily be packaged and run on any platform. 
