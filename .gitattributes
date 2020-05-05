@@ -1,1 +1,4 @@
+# files that git determines to be text will have their line endings converted from CRLF to LF when added to the git index (and thus when committed to the repo).
+# Note that this does not affect files in the workspace. 
+# more info https://git-scm.com/docs/gitattributes, https://stackoverflow.com/questions/21472971/what-is-the-purpose-of-text-auto-in-gitattributes-file
 * text=auto
