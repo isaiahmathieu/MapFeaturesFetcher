@@ -99,6 +99,15 @@ class FeatureDownloader(overpassEndpoint: String) {
         s"""
            |way["highway"="track"](poly: "$boundaryCoordinates");
            |""".stripMargin)
+      case Features.passes => String.format(querySkeleton,
+        s"""
+           |node["mountain_pass"="yes"](poly: "$boundaryCoordinates");
+           |node["natural"="saddle"](poly: "$boundaryCoordinates");
+           |""".stripMargin)
+      case Features.campsites => String.format(querySkeleton,
+        s"""
+           |node["tourism"="camp_site"](poly: "$boundaryCoordinates");
+           |""".stripMargin)
       case Features.roads => String.format(querySkeleton,
         s"""
            |way["highway"="motorway"]( poly: "$boundaryCoordinates");

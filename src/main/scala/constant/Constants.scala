@@ -3,7 +3,7 @@ package constant
 // todo figure out if there's a cleaner approach than using Enumerations here
 object Features extends Enumeration {
   type Features = Value
-  val trails, lakes, peaks, rivers, viewpoints, tracks, roads = Value
+  val trails, lakes, peaks, rivers, viewpoints, tracks, roads, passes, campsites = Value
 }
 
 object OutputFormats extends Enumeration {
